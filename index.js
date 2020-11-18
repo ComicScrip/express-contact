@@ -26,6 +26,21 @@ app.post('/contact', (req, res) => {
     res.json({ error: 'wrong API key' });
   }
 
+  if (!name) {
+    res.status(422);
+    return res.json({ error: 'name is empty' });
+  }
+
+  if (!email) {
+    res.status(422);
+    return res.json({ error: 'email is empty' });
+  }
+
+  if (!message) {
+    res.status(422);
+    return res.json({ error: 'message is empty' });
+  }
+
   const mailOptions = {
     from: process.env.GMAIL_ACCOUNT,
     to: process.env.GMAIL_ACCOUNT,
