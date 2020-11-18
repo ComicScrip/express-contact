@@ -1,13 +1,13 @@
 require('dotenv').config();
 const express = require('express');
-const cors = require('cors');
 const nodemailer = require('nodemailer');
 
-const PORT = process.env.PORT || 5000;
-
+const PORT = process.env.PORT || 4000;
 const app = express();
+
 app.use(express.json());
-app.use(cors());
+
+console.log(process.env.GMAIL_ACCOUNT);
 
 const transporter = nodemailer.createTransport({
   service: 'gmail',
@@ -18,36 +18,31 @@ const transporter = nodemailer.createTransport({
 });
 
 app.post('/contact', (req, res) => {
-  const { name, email, message } = req.body;
-  const { apiKey } = req.query;
-
-  if (apiKey !== process.env.API_KEY) {
+  if (req.query.apiKey !== process.env.API_KEY) {
     res.status(401);
-    res.json({ error: 'wrong API key' });
+    res.json({ error: 'wrong api key' });
   }
+
+  const { name, message, email } = req.body;
 
   const mailOptions = {
     from: process.env.GMAIL_ACCOUNT,
     to: process.env.GMAIL_ACCOUNT,
     subject: `Demande de contact de ${name}`,
-    text: `${name} (${email}) vous a fait une demande de contact : \n\n${message}`,
+    text: `${name} (${email}) vous a envoyé une demande de contact : \n\n${message}`,
   };
 
   transporter.sendMail(mailOptions, function (error, info) {
     if (error) {
-      console.error(error);
-      res.status(500);
-      res.json({
-        errorMessage:
-          'There was a problem while sending the contact request email to the admin',
-      });
+      console.log(error);
+      res.sendStatus(500);
     } else {
       console.log('Email sent: ' + info.response);
-      res.json({ message: 'demande de contact envoyée avec succès' });
+      res.send('votre demande de contact a bien été envoyée');
     }
   });
 });
 
 app.listen(PORT, () => {
-  console.log(`server listenting on port ${PORT}`); // eslint-disable-line
+  console.log(`server started on port ${PORT}`);
 });
